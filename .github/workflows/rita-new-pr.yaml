@@ -17,7 +17,7 @@ env:
 jobs:
   notify_channel:
     runs-on: ubuntu-22.04
-    if: github.event.pull_request.draft == false
+    if: env.PASSWORD && github.event.pull_request.draft == false
     steps:
       - name: Send message
         run: |
