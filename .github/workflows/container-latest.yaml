@@ -58,3 +58,11 @@ jobs:
           registry: ghcr.io/${{ github.repository_owner }}
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+  run-global-ci:
+    needs: publish
+    uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+    with:
+      server_image: ghcr.io/trustification/trustd:latest
+      run_api_tests: true
+      run_ui_tests: true
