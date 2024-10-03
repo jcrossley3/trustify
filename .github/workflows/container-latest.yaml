@@ -43,14 +43,21 @@ jobs:
         run: ls -R ${{ github.workspace }}/download
 
       # Build the container
-
-      - uses: ./.github/actions/build-container
+      - name: Build container
+        uses: ./.github/actions/build-container
         with:
           image_name: ${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_TAG }}
 
-      # Push to ghcr.io
+      # Test the container
+      - name: Test container
+        uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+        with:
+          artifact: container
+          run_api_tests: true
+          run_ui_tests: true
 
+      # Push to ghcr.io
       - name: Push to ghcr.io
         uses: redhat-actions/push-to-registry@v2
         with:
@@ -60,10 +67,3 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-  run-global-ci:
-    needs: publish
-    uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
-    with:
-      server_image: ghcr.io/trustification/trustd:latest
-      run_api_tests: true
-      run_ui_tests: true
