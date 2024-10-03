@@ -49,13 +49,11 @@ jobs:
           image_name: ${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_TAG }}
 
-      # # Test the container
-      # - name: Test container
-      #   uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
-      #   with:
-      #     artifact: container
-      #     run_api_tests: true
-      #     run_ui_tests: true
+      - uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+        with:
+          artifact: container
+          run_api_tests: true
+          run_ui_tests: true
 
       # Push to ghcr.io
       - name: Push to ghcr.io
