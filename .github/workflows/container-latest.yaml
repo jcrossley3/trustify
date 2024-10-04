@@ -10,14 +10,18 @@ on:
 
 concurrency: container-latest
 
+env:
+  IMAGE_NAME: trustd
+  IMAGE_TAG: latest
+
 jobs:
-  build:
+  build-binaries:
     uses: ./.github/workflows/build-binary.yaml
     with:
       version: latest
 
-  publish:
-    needs: [ build ]
+  build-container:
+    needs: build-binaries
     runs-on: ubuntu-22.04
 
     permissions:
@@ -25,10 +29,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-
-    env:
-      IMAGE_NAME: trustd
-      IMAGE_TAG: latest
 
     steps:
 
@@ -49,11 +49,23 @@ jobs:
           image_name: ${{ env.IMAGE_NAME }}
           image_tag: ${{ env.IMAGE_TAG }}
 
-      - uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
-        with:
-          artifact: container
-          run_api_tests: true
-          run_ui_tests: true
+  test:
+    needs: build-container
+    uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+    with:
+      artifact: container
+      run_api_tests: true
+      run_ui_tests: true
+
+  publish:
+    needs: test
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      attestations: write
 
       # Push to ghcr.io
       - name: Push to ghcr.io
