@@ -42,7 +42,7 @@ runs:
       shell: bash
       run: podman save --multi-image-archive ${{ inputs.image_name }}:${{ inputs.image_tag }} > /tmp/image.tar
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v3
       with:
         name: image
         path: /tmp/image.tar
