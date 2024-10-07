@@ -16,13 +16,11 @@ env:
 
 jobs:
   build:
-    if: ${{ github.repository == 'trustification/trustify' }}
     uses: ./.github/workflows/build-binary.yaml
     with:
       version: latest
 
   publish:
-    if: ${{ github.repository == 'trustification/trustify' }}
     needs: [ build ]
     runs-on: ubuntu-22.04
 
