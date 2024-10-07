@@ -6,8 +6,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency: container-latest
+
+env:
+  IMAGE_NAME: trustd
+  IMAGE_TAG: latest
 
 jobs:
   build:
@@ -26,10 +31,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-
-    env:
-      IMAGE_NAME: trustd
-      IMAGE_TAG: latest
 
     steps:
 
@@ -60,3 +61,11 @@ jobs:
           registry: ghcr.io/${{ github.repository_owner }}
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+  e2e-test:
+    needs: publish
+    uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+    with:
+      server_image: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+      run_api_tests: true
+      run_ui_tests: true
