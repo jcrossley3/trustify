@@ -40,10 +40,10 @@ runs:
     # We save the container image here. But when loading it, the multi-arch aspect of it will be gone.
     - name: Save image
       shell: bash
-      run: podman save --multi-image-archive ${{ inputs.image_name }}:${{ inputs.image_tag }} > image.tar
+      run: podman save --multi-image-archive ${{ inputs.image_name }}:${{ inputs.image_tag }} > /tmp/image.tar
 
     - uses: actions/upload-artifact@v4
       with:
         name: container
-        path: image.tar
+        path: /tmp/image.tar
         if-no-files-found: error
