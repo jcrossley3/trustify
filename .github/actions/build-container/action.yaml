@@ -44,6 +44,6 @@ runs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: container
+        name: image
         path: /tmp/image.tar
         if-no-files-found: error

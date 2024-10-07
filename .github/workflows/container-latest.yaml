@@ -47,7 +47,7 @@ jobs:
     needs: build-container
     uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
     with:
-      artifact: container
+      artifact: image
       run_api_tests: true
       run_ui_tests: true
 
