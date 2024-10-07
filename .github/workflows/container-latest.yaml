@@ -64,8 +64,9 @@ jobs:
 
   e2e-test:
     needs: publish
-    uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
-    with:
-      server_image: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-      run_api_tests: true
-      run_ui_tests: true
+    steps:
+      - uses: trustification/trustify-ci/.github/workflows/global-ci.yml@main
+        with:
+          server_image: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          run_api_tests: true
+          run_ui_tests: true
