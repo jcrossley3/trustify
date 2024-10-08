@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     outputs:
-      image: ${{ steps.push.outputs.registry_path }}
+      image: ${{ steps.push.outputs.registry-path }}
 
     permissions:
       contents: write
