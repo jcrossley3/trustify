@@ -13,7 +13,7 @@ concurrency: container-latest
 env:
   IMAGE_NAME: trustd
   IMAGE_TAG: latest
-  NAMESPACE: trustify-ci
+  OPENSHIFT_NAMESPACE: trustify-ci
   OPENSHIFT_SERVER: https://api.cluster.trustification.rocks:6443
 
 jobs:
@@ -87,7 +87,7 @@ jobs:
         with:
           openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.NAMESPACE }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
       - name: Install trustify
         uses: trustification/trustify-operator/.github/actions/install-trustify@main
@@ -96,3 +96,4 @@ jobs:
         with:
           operator-bundle-image: ghcr.io/trustification/trustify-operator-bundle:latest
           trustify-cr: '{"kind":"Trustify","apiVersion":"org.trustify/v1alpha1","metadata":{"name":"staging"},"spec":{"serverImage":${{ env.SERVER_IMAGE }}}}'
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
