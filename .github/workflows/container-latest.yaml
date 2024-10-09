@@ -95,5 +95,5 @@ jobs:
           SERVER_IMAGE: ${{ needs.publish.outputs.image }}
         with:
           operator-bundle-image: ghcr.io/trustification/trustify-operator-bundle:latest
-          trustify-cr: '{"kind":"Trustify","apiVersion":"org.trustify/v1alpha1","metadata":{"name":"staging"},"spec":{"serverImage":"${{ env.SERVER_IMAGE }}"}}'
+          trustify-cr: '{"kind":"Trustify","apiVersion":"org.trustify/v1alpha1","metadata":{"name":"myapp"},"spec":{"serverImage":"${{ env.SERVER_IMAGE }}"}}'
           namespace: ${{ env.OPENSHIFT_NAMESPACE }}
