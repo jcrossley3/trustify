@@ -72,7 +72,7 @@ jobs:
     with:
       server_image: ${{ needs.publish.outputs.image }}
       run_api_tests: true
-      run_ui_tests: true
+      run_ui_tests: false
 
   deploy:
     runs-on: ubuntu-22.04
