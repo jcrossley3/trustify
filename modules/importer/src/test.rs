@@ -37,6 +37,7 @@ fn mock_configuration(source: impl Into<String>) -> ImporterConfiguration {
 fn mock_importer(result: &Importer, source: impl Into<String>) -> Importer {
     Importer {
         name: "foo".into(),
+        heartbeat: None,
         data: ImporterData {
             configuration: mock_configuration(source),
             state: State::Waiting,
@@ -90,6 +91,7 @@ async fn default(ctx: TrustifyContext) {
         result,
         vec![Importer {
             name: "foo".into(),
+            heartbeat: None,
             data: ImporterData {
                 configuration: mock_configuration("bar"),
                 state: State::Waiting,
