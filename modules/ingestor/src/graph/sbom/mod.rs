@@ -605,7 +605,7 @@ impl SbomContext {
 
         let refs = purls
             .into_iter()
-            .map(|purl| PackageReference::Purl(purl))
+            .map(PackageReference::Purl)
             .chain(cpes.into_iter().map(PackageReference::Cpe));
         creator.add(
             NodeInfoParam {
