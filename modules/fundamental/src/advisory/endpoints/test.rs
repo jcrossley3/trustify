@@ -635,6 +635,7 @@ async fn query_advisories_by_label(ctx: &TrustifyContext) -> Result<(), anyhow::
             ("importer", "none"),
             ("file", "cve-2023-33201.json"),
             ("datasetFile", "none"),
+            ("foo", "bar"),
         ],
     )
     .await?;
@@ -649,6 +650,12 @@ async fn query_advisories_by_label(ctx: &TrustifyContext) -> Result<(), anyhow::
     query("type=csaf&source=test&importer=none&file=cve-2023-33201.json&datasetFile=none").await;
     query("file>aaah.json").await;
     query("datasetFile<zilch").await;
+    query("label:foo=bar").await;
+    query("label:type=csaf").await;
+    query("label:importer=some|none").await;
+    query("label:type!=spdx").await;
+    query("labels:type~af&labels:foo>aah").await;
+    query("labels:importer~one&label:file~33201").await;
 
     Ok(())
 }

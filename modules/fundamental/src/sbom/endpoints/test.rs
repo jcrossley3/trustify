@@ -325,6 +325,7 @@ async fn query_sboms_by_label(ctx: &TrustifyContext) -> Result<(), anyhow::Error
             ("importer", "none"),
             ("file", "zoo.json"),
             ("datasetFile", "none"),
+            ("foo", "bar"),
         ],
     )
     .await?;
@@ -338,6 +339,12 @@ async fn query_sboms_by_label(ctx: &TrustifyContext) -> Result<(), anyhow::Error
     query("type=cyclonedx&source=test&importer=none&file=zoo.json&datasetFile=none").await;
     query("file>foo.json").await;
     query("datasetFile<zilch").await;
+    query("label:foo=bar").await;
+    query("label:type=cyclonedx").await;
+    query("label:importer=some|none").await;
+    query("label:type!=spdx").await;
+    query("labels:type~one&labels:foo>aah").await;
+    query("labels:importer~one&label:file~zoo").await;
 
     Ok(())
 }

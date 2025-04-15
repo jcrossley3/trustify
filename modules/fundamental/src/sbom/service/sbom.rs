@@ -125,7 +125,11 @@ impl SbomService {
                     .json_keys(
                         "labels",
                         &["type", "source", "importer", "file", "datasetFile"],
-                    ),
+                    )
+                    .translator(|f, op, v| match f.split_once(':') {
+                        Some(("label", key)) => Some(format!("labels:{key}{op}{v}")),
+                        _ => None,
+                    }),
             )?
             .limiting(connection, paginated.offset, paginated.limit);
 
