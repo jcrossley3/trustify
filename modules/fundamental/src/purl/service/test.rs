@@ -1,5 +1,4 @@
 use crate::{
-    advisory::service::AdvisoryService,
     purl::{model::details::purl::StatusContext, service::PurlService},
     sbom::service::SbomService,
 };
@@ -702,7 +701,7 @@ async fn contextual_status(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
 
 #[test_context(TrustifyContext)]
 #[test(actix_web::test)]
-async fn gc_purls(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
+async fn gc_purls_from_sbom(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
     let purl_service = PurlService::new();
     assert_eq!(
         0,
@@ -742,27 +741,18 @@ async fn gc_purls(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
     );
 
     // delete the sbom...
-    async fn delete_sbom_and_advisories(
-        ctx: &TrustifyContext,
-        id: Id,
-    ) -> Result<(), anyhow::Error> {
+    async fn delete_sbom(ctx: &TrustifyContext, id: Id) -> Result<(), anyhow::Error> {
         let svc = SbomService::new(ctx.db.clone());
         let sbom = svc
             .fetch_sbom_details(id, vec![], &ctx.db)
             .await?
             .expect("fetch_sbom");
         assert!(svc.delete_sbom(sbom.summary.head.id, &ctx.db).await?);
-
-        // delete the advisories in the sbom...
-        let svc = AdvisoryService::new(ctx.db.clone());
-        for a in sbom.advisories {
-            assert!(svc.delete_advisory(a.head.uuid, &ctx.db).await?);
-        }
         Ok(())
     }
 
     // delete the ubi sbom....
-    delete_sbom_and_advisories(ctx, ubi9_sbom.id).await?;
+    delete_sbom(ctx, ubi9_sbom.id).await?;
 
     // it should leave behind orphaned purls
     let result = purl_service
@@ -781,7 +771,7 @@ async fn gc_purls(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
     assert_eq!(880, result.items.len());
 
     // delete the quarkus sbom....
-    delete_sbom_and_advisories(ctx, quarkus_sbom.id).await?;
+    delete_sbom(ctx, quarkus_sbom.id).await?;
 
     // it should leave behind orphaned purls
     let result = purl_service
@@ -798,6 +788,37 @@ async fn gc_purls(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
         .await?;
 
     assert_eq!(0, result.items.len());
+    Ok(())
+}
+
+#[test_context(TrustifyContext)]
+#[test(actix_web::test)]
+async fn gc_purls_from_single_csaf(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
+    let purl_service = PurlService::new();
+    assert_eq!(
+        0,
+        purl_service
+            .purls(Query::default(), Paginated::default(), &ctx.db)
+            .await?
+            .items
+            .len()
+    );
+
+    ctx.ingest_document("../datasets/ds1/csaf/2023/cve-2023-2798.json")
+        .await?;
+
+    assert_eq!(
+        6,
+        purl_service
+            .purls(Query::default(), Paginated::default(), &ctx.db)
+            .await?
+            .items
+            .len()
+    );
+
+    // should any packages be garbage collected? I honestly don't know.
+    assert_eq!(0, purl_service.gc_purls(&ctx.db).await?);
+
     Ok(())
 }
 
