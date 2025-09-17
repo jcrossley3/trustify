@@ -17,7 +17,13 @@ pub enum Error {
     #[error(transparent)]
     Query(#[from] trustify_common::db::query::Error),
     #[error(transparent)]
+    Http(#[from] reqwest::Error),
+    #[error(transparent)]
+    HttpHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
+    #[error(transparent)]
     Ingestor(#[from] trustify_module_ingestor::service::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::error::Error),
     #[error(transparent)]
     Purl(#[from] PurlErr),
     #[error("Bad request: {0}")]
