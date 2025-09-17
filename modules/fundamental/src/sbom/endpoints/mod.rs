@@ -16,12 +16,16 @@ use crate::{
     sbom::{
         model::{
             SbomExternalPackageReference, SbomNodeReference, SbomPackage, SbomPackageRelation,
-            SbomSummary, Which, details::SbomAdvisory,
+            SbomSummary, Which,
+            details::SbomAdvisory,
+            exploitiq::{
+                ExploitIqRequest, ReportRequest, ReportResult, create_report, fetch_report,
+            },
         },
         service::SbomService,
     },
 };
-use actix_web::{HttpResponse, Responder, delete, get, http::header, post, web};
+use actix_web::{HttpResponse, Responder, delete, get, http::header, post, web, web::BytesMut};
 use config::Config;
 use futures_util::TryStreamExt;
 use sea_orm::{TransactionTrait, prelude::Uuid};
@@ -69,7 +73,9 @@ pub fn configure(
         .service(label::update)
         .service(label::all)
         .service(get_unique_licenses)
-        .service(get_license_export);
+        .service(get_license_export)
+        .service(create_exploitiq_report)
+        .service(fetch_exploitiq_report);
 }
 
 const CONTENT_TYPE_GZIP: &str = "application/gzip";
@@ -500,26 +506,77 @@ pub async fn download(
     _: Require<ReadSbom>,
 ) -> Result<impl Responder, Error> {
     let id = Id::from_str(&key).map_err(Error::IdKey)?;
-
-    let Some(sbom) = sbom.fetch_sbom_summary(id, db.as_ref()).await? else {
-        return Ok(HttpResponse::NotFound().finish());
-    };
-
-    if let Some(doc) = &sbom.source_document {
-        let storage_key = doc.try_into()?;
-
-        let stream = ingestor
-            .storage()
-            .retrieve(storage_key)
-            .await
-            .map_err(Error::Storage)?
-            .map(|stream| stream.map_err(Error::Storage));
-
-        Ok(match stream {
-            Some(s) => HttpResponse::Ok().streaming(s),
-            None => HttpResponse::NotFound().finish(),
-        })
-    } else {
-        Ok(HttpResponse::NotFound().finish())
+    match sbom
+        .fetch_sbom_summary(id, db.as_ref())
+        .await?
+        .and_then(|sbom| sbom.source_document)
+    {
+        Some(doc) => {
+            let storage_key = doc.try_into()?;
+            Ok(match ingestor.storage().retrieve(storage_key).await? {
+                Some(s) => HttpResponse::Ok().streaming(s),
+                None => HttpResponse::NotFound().finish(),
+            })
+        }
+        None => Ok(HttpResponse::NotFound().finish()),
     }
+}
+
+/// Create ExploitIQ report
+#[utoipa::path(
+    tag = "sbom",
+    operation_id = "createExploitIQReport",
+    request_body = ReportRequest,
+    params(
+        ("id" = Id, Path, description = "The id of the SBOM"),
+    ),
+    responses(
+        (status = 201, description = "Create a report", body = ReportResult),
+        (status = 400, description = "Unable to read advisory list"),
+        (status = 404, description = "The SBOM could not be found"),
+    )
+)]
+#[post("/v2/sbom/{id}/exploitiq")]
+pub async fn create_exploitiq_report(
+    ingestor: web::Data<IngestorService>,
+    db: web::Data<Database>,
+    sbom: web::Data<SbomService>,
+    id: web::Path<String>,
+    web::Json(ReportRequest { vulnerabilities }): web::Json<ReportRequest>,
+    _: Require<ReadSbom>,
+) -> Result<impl Responder, Error> {
+    let id = Id::from_str(&id).map_err(Error::IdKey)?;
+    match sbom
+        .fetch_sbom_summary(id, db.as_ref())
+        .await?
+        .and_then(|sbom| sbom.source_document)
+    {
+        Some(doc) => Ok(match ingestor.storage().retrieve(doc.try_into()?).await? {
+            Some(s) => {
+                let buf = s.try_collect::<BytesMut>().await?;
+                let sbom: serde_json::Value = serde_json::from_slice(buf.as_ref())?;
+                let req = ExploitIqRequest::new(sbom, vulnerabilities);
+                HttpResponse::Ok().json(create_report(req).await?)
+            }
+            None => HttpResponse::NotFound().finish(),
+        }),
+        None => Ok(HttpResponse::NotFound().finish()),
+    }
+}
+
+/// Fetch ExploitIQ report
+#[utoipa::path(
+    tag = "sbom",
+    operation_id = "fetchExploitIQReport",
+    params(
+        ("id" = String, description = "ExploitIQ report id"),
+    ),
+    responses(
+        (status = 200, description = "The proxied ExploitIQ report", body = inline(BinaryData)),
+    )
+)]
+#[get("/v2/sbom/exploitiq/{id}")]
+pub async fn fetch_exploitiq_report(id: web::Path<String>) -> Result<impl Responder, Error> {
+    let id = id.into_inner();
+    Ok(HttpResponse::Ok().streaming(fetch_report(id).await?))
 }

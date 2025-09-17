@@ -25,13 +25,14 @@ actix-web = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 base64 = { workspace = true }
+bytes = { workspace = true }
 cpe = { workspace = true }
 csv = { workspace = true }
 flate2 ={ workspace = true }
 futures-util = { workspace = true }
 itertools = { workspace = true }
 log = { workspace = true }
-reqwest = { workspace = true, features = ["json"] }
+reqwest = { workspace = true, features = ["json", "stream"] }
 sanitize-filename = { workspace = true }
 sea-orm = { workspace = true }
 sea-query = { workspace = true }
@@ -54,7 +55,6 @@ async-graphql = { workspace = true, features = ["uuid", "time"], optional = true
 
 [dev-dependencies]
 actix-http = { workspace = true }
-bytes = { workspace = true }
 bytesize = { workspace = true }
 chrono = { workspace = true }
 criterion = { workspace = true, features = ["html_reports", "async_tokio"] }
