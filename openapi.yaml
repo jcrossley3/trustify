@@ -2394,9 +2394,7 @@ paths:
           description: The proxied ExploitIQ report
           content:
             application/json:
-              schema:
-                type: string
-                format: binary
+              schema: {}
   /api/v2/sbom/{id}:
     get:
       tags:

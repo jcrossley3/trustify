@@ -25,7 +25,12 @@ use crate::{
         service::SbomService,
     },
 };
-use actix_web::{HttpResponse, Responder, delete, get, http::header, post, web, web::BytesMut};
+use actix_web::{
+    HttpResponse, Responder, delete, get,
+    http::header::{self, ContentType},
+    post,
+    web::{self, BytesMut},
+};
 use config::Config;
 use futures_util::TryStreamExt;
 use sea_orm::{TransactionTrait, prelude::Uuid};
@@ -556,7 +561,7 @@ pub async fn create_exploitiq_report(
                 let buf = s.try_collect::<BytesMut>().await?;
                 let sbom: serde_json::Value = serde_json::from_slice(buf.as_ref())?;
                 let req = ExploitIqRequest::new(sbom, vulnerabilities);
-                HttpResponse::Ok().json(create_report(req).await?)
+                HttpResponse::Created().json(create_report(req).await?)
             }
             None => HttpResponse::NotFound().finish(),
         }),
@@ -572,11 +577,14 @@ pub async fn create_exploitiq_report(
         ("id" = String, description = "ExploitIQ report id"),
     ),
     responses(
-        (status = 200, description = "The proxied ExploitIQ report", body = inline(BinaryData)),
+        (status = 200, description = "The proxied ExploitIQ report", body = serde_json::Value),
     )
 )]
 #[get("/v2/sbom/exploitiq/{id}")]
 pub async fn fetch_exploitiq_report(id: web::Path<String>) -> Result<impl Responder, Error> {
     let id = id.into_inner();
-    Ok(HttpResponse::Ok().streaming(fetch_report(id).await?))
+    let stream = fetch_report(id).await?;
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .streaming(stream))
 }
