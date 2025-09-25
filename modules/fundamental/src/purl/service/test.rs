@@ -816,7 +816,6 @@ async fn gc_purls_from_single_csaf(ctx: &TrustifyContext) -> Result<(), anyhow::
             .len()
     );
 
-    // should any packages be garbage collected? I honestly don't know.
     assert_eq!(0, purl_service.gc_purls(&ctx.db).await?);
 
     Ok(())
