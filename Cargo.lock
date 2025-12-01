@@ -2055,7 +2055,7 @@ dependencies = [
 [[package]]
 name = "csaf"
 version = "0.5.0"
-source = "git+https://github.com/trustification/csaf-rs?rev=17620a225744b4a18845d4f7bf63354e01109b91#17620a225744b4a18845d4f7bf63354e01109b91"
+source = "git+https://github.com/trustification/csaf-rs?branch=purl-name-encoding-fix#3e11ad9db4164ec34e8641a189c789930b58664c"
 dependencies = [
  "chrono",
  "cpe",
@@ -5065,12 +5065,11 @@ dependencies = [
 
 [[package]]
 name = "packageurl"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c53362339d1c48910f1b0c35e2ae96e2d32e442c7dc3ac5f622908ec87221f08"
+version = "0.6.0-rc.1"
+source = "git+https://github.com/jcrossley3/packageurl.rs?branch=issue-28#9f9b644667c7d1bfdc06fd4d8cf88b33603db1fe"
 dependencies = [
  "percent-encoding",
- "thiserror 1.0.69",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
