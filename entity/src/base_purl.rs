@@ -1,4 +1,4 @@
-use sea_orm::{FromQueryResult, entity::prelude::*};
+use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "base_purl")]
@@ -54,13 +54,3 @@ impl Related<super::version_range::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(FromQueryResult, Debug)]
-pub struct PackageType {
-    pub package_type: String,
-}
-
-#[derive(FromQueryResult, Debug)]
-pub struct PackageNamespace {
-    pub package_namespace: String,
-}

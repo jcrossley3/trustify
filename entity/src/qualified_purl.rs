@@ -1,4 +1,4 @@
-use sea_orm::{FromJsonQueryResult, FromQueryResult, entity::prelude::*};
+use sea_orm::{FromJsonQueryResult, entity::prelude::*};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use trustify_common::purl::Purl;
@@ -91,16 +91,6 @@ impl Related<super::base_purl::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(FromQueryResult, Debug)]
-pub struct PackageType {
-    pub package_type: String,
-}
-
-#[derive(FromQueryResult, Debug)]
-pub struct PackageNamespace {
-    pub package_namespace: String,
-}
 
 #[cfg(test)]
 mod test {
