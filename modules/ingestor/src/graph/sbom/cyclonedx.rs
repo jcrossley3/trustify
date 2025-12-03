@@ -28,7 +28,7 @@ use std::{borrow::Cow, str::FromStr};
 use time::{OffsetDateTime, format_description::well_known::Iso8601};
 use tracing::instrument;
 use trustify_common::{cpe::Cpe, purl::Purl};
-use trustify_entity::relationship::Relationship;
+use trustify_entity::{relationship::Relationship, sbom_package::PackageType};
 use uuid::Uuid;
 
 /// Marker we use for identifying the document itself.
@@ -445,6 +445,7 @@ impl<'a> ComponentCreator<'a> {
                 group: comp.group.as_ref().map(|v| v.to_string()),
                 version: comp.version.as_ref().map(|v| v.to_string()),
                 package_license_info: cyclone_licenses,
+                package_type: PackageType::from_str(&comp.type_).ok(),
             },
             self.refs,
             comp.hashes.clone().into_iter().flatten(),
