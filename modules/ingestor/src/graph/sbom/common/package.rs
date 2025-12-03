@@ -5,6 +5,7 @@ use sea_query::OnConflict;
 use tracing::instrument;
 use trustify_common::db::chunk::EntityChunkedIter;
 use trustify_common::purl::Purl;
+use trustify_entity::sbom_package::PackageType;
 use trustify_entity::{
     sbom_package, sbom_package_cpe_ref, sbom_package_license,
     sbom_package_license::LicenseCategory, sbom_package_purl_ref,
@@ -21,12 +22,14 @@ pub struct PackageCreator {
     pub(crate) sbom_package_licenses: Vec<sbom_package_license::ActiveModel>,
 }
 
+#[derive(Default)]
 pub struct NodeInfoParam {
     pub node_id: String,
     pub name: String,
     pub group: Option<String>,
     pub version: Option<String>,
     pub package_license_info: Vec<PackageLicensenInfo>,
+    pub package_type: Option<PackageType>,
 }
 
 pub struct PackageLicensenInfo {
@@ -98,6 +101,7 @@ impl PackageCreator {
             group: Set(node_info.group),
             node_id: Set(node_info.node_id.clone()),
             version: Set(node_info.version),
+            package_type: Set(node_info.package_type),
         });
 
         for package_license in node_info.package_license_info {

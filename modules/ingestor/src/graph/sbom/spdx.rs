@@ -297,9 +297,9 @@ impl SbomContext {
                 NodeInfoParam {
                     node_id: package.package_spdx_identifier,
                     name: package.package_name,
-                    group: None,
                     version: package.package_version,
                     package_license_info,
+                    ..Default::default()
                 },
                 refs,
                 package.package_checksum,

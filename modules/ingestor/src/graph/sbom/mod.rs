@@ -610,9 +610,8 @@ impl SbomContext {
             NodeInfoParam {
                 node_id,
                 name,
-                group: None,
                 version,
-                package_license_info: vec![],
+                ..Default::default()
             },
             refs,
             Checksum::NONE,
