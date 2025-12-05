@@ -5065,8 +5065,8 @@ dependencies = [
 
 [[package]]
 name = "packageurl"
-version = "0.6.0-rc.1"
-source = "git+https://github.com/jcrossley3/packageurl.rs?branch=issue-28#9f9b644667c7d1bfdc06fd4d8cf88b33603db1fe"
+version = "0.6.0"
+source = "git+https://github.com/scm-rs/packageurl.rs?rev=d24f20f3d3c0242d88687119a5353dbc681eac2e#d24f20f3d3c0242d88687119a5353dbc681eac2e"
 dependencies = [
  "percent-encoding",
  "thiserror 2.0.17",
