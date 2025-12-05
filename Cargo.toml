@@ -205,7 +205,7 @@ postgresql_commands = { version = "0.20.0", default-features = false, features =
 # required due to https://github.com/voteblake/csaf-rs/pull/29
 csaf = { git = "https://github.com/trustification/csaf-rs", branch = "purl-name-encoding-fix" }
 # required due to https://github.com/scm-rs/packageurl.rs/issues/28
-packageurl = { git = "https://github.com/jcrossley3/packageurl.rs", branch = "issue-28" }
+packageurl = { git = "https://github.com/scm-rs/packageurl.rs", rev = "d24f20f3d3c0242d88687119a5353dbc681eac2e" }
 # required due to https://github.com/gcmurphy/osv/pull/58
 #osv = { git = "https://github.com/ctron/osv", branch = "feature/drop_deps_1" }
 
