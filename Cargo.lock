@@ -5066,7 +5066,8 @@ dependencies = [
 [[package]]
 name = "packageurl"
 version = "0.6.0"
-source = "git+https://github.com/scm-rs/packageurl.rs?rev=d24f20f3d3c0242d88687119a5353dbc681eac2e#d24f20f3d3c0242d88687119a5353dbc681eac2e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35da99768af1ae8830ccf30d295db0e09c24bcfda5a67515191dd4b773f6d82a"
 dependencies = [
  "percent-encoding",
  "thiserror 2.0.17",
