@@ -27,48 +27,48 @@ pub struct Model {
     strum::EnumString,
     strum::Display,
 )]
-#[sea_orm(rs_type = "i32", db_type = "Integer")]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "package_type")]
 #[serde(rename_all = "kebab-case")]
 #[strum(serialize_all = "kebab-case", ascii_case_insensitive)]
 pub enum PackageType {
     /// A software application
-    #[sea_orm(num_value = 0)]
+    #[sea_orm(string_value = "application")]
     Application,
     /// A software framework
-    #[sea_orm(num_value = 1)]
+    #[sea_orm(string_value = "framework")]
     Framework,
     /// A software library
-    #[sea_orm(num_value = 2)]
+    #[sea_orm(string_value = "library")]
     Library,
     /// A packaging and/or runtime format
-    #[sea_orm(num_value = 3)]
+    #[sea_orm(string_value = "container")]
     Container,
     /// A runtime environment which interprets or executes software
-    #[sea_orm(num_value = 4)]
+    #[sea_orm(string_value = "platform")]
     Platform,
     /// A software operating system without regard to deployment model
-    #[sea_orm(num_value = 5)]
+    #[sea_orm(string_value = "operating-system")]
     OperatingSystem,
     /// A hardware device such as a processor or chip-set
-    #[sea_orm(num_value = 6)]
+    #[sea_orm(string_value = "device")]
     Device,
     /// A special type of software that operates or controls a particular type of device
-    #[sea_orm(num_value = 7)]
+    #[sea_orm(string_value = "device-driver")]
     DeviceDriver,
     /// A special type of software that provides low-level control over a device's hardware
-    #[sea_orm(num_value = 8)]
+    #[sea_orm(string_value = "firmware")]
     Firmware,
     /// A computer file
-    #[sea_orm(num_value = 9)]
+    #[sea_orm(string_value = "file")]
     File,
     /// A model based on training data that can make predictions or decisions without being explicitly programmed to do so
-    #[sea_orm(num_value = 10)]
+    #[sea_orm(string_value = "machine-learning-model")]
     MachineLearningModel,
     /// A collection of discrete values that convey information
-    #[sea_orm(num_value = 11)]
+    #[sea_orm(string_value = "data")]
     Data,
     /// A cryptographic asset including algorithms, protocols, certificates, keys, tokens, and secrets
-    #[sea_orm(num_value = 12)]
+    #[sea_orm(string_value = "cryptographic-asset")]
     CryptographicAsset,
 }
 

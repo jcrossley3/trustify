@@ -8391,6 +8391,7 @@ version = "0.4.0-beta.1"
 dependencies = [
  "anyhow",
  "sea-orm-migration",
+ "strum 0.27.2",
  "test-context",
  "test-log",
  "tokio",
