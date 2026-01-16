@@ -375,6 +375,7 @@ struct ComponentCreator<'a> {
 }
 
 impl<'a> ComponentCreator<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         cpes: &'a mut CpeCreator,
         purls: &'a mut PurlCreator,
