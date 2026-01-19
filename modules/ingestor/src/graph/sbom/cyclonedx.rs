@@ -292,7 +292,7 @@ impl<'a> Creator<'a> {
         let mut creator = ComponentCreator::new(self.sbom_id, self.components.len());
 
         for comp in self.components {
-            creator.add(comp);
+            creator.add_component(comp)?;
         }
 
         for (left, rel, right) in self.relations {
@@ -303,7 +303,7 @@ impl<'a> Creator<'a> {
         creator.post_process(processors);
 
         // validate relationships before inserting
-        creator.validate().map_err(Error::InvalidContent)?;
+        creator.validate()?;
 
         // write to db
         creator.create(db).await?;
@@ -342,7 +342,7 @@ impl ComponentCreator {
         }
     }
 
-    pub fn add(&mut self, comp: &Component) {
+    pub fn add_component(&mut self, comp: &Component) -> Result<(), Error> {
         let node_id = comp
             .bom_ref
             .clone()
@@ -433,6 +433,7 @@ impl ComponentCreator {
                         );
                     }
                     MachineLearningModel => {
+                        // TODO: store the model card data
                         self.models.add(
                             node_id.clone(),
                             comp.name.to_string(),
@@ -440,6 +441,7 @@ impl ComponentCreator {
                         );
                     }
                     CryptographicAsset => {
+                        // TODO: store the crypto properties data
                         self.crypto.add(
                             node_id.clone(),
                             comp.name.to_string(),
@@ -449,7 +451,11 @@ impl ComponentCreator {
                     _ => log::error!("Unsupported component type: '{ty}'"),
                 }
             }
-            Err(e) => log::error!("Invalid component type: {e}"),
+            Err(e) => {
+                return Err(Error::InvalidContent(anyhow::anyhow!(
+                    "Invalid component type: {e}"
+                )));
+            }
         }
 
         for ancestor in comp
@@ -462,7 +468,7 @@ impl ComponentCreator {
                 .clone()
                 .unwrap_or_else(|| Uuid::new_v4().to_string());
 
-            self.add(ancestor);
+            self.add_component(ancestor)?;
 
             self.add_relation(target, Relationship::AncestorOf, node_id.clone());
         }
@@ -477,10 +483,12 @@ impl ComponentCreator {
                 .clone()
                 .unwrap_or_else(|| Uuid::new_v4().to_string());
 
-            self.add(variant);
+            self.add_component(variant)?;
 
             self.add_relation(node_id.clone(), Relationship::Variant, target);
         }
+
+        Ok(())
     }
 
     fn add_relation(&mut self, left: String, rel: Relationship, right: String) {
@@ -550,14 +558,16 @@ impl ComponentCreator {
         .run(processors);
     }
 
-    fn validate(&self) -> Result<(), anyhow::Error> {
+    fn validate(&self) -> Result<(), Error> {
         let sources = References::new()
             .add_source(&[CYCLONEDX_DOC_REF])
             .add_source(&self.packages)
             .add_source(&self.files)
             .add_source(&self.models)
             .add_source(&self.crypto);
-        self.relationships.validate(sources)
+        self.relationships
+            .validate(sources)
+            .map_err(Error::InvalidContent)
     }
 
     // order matters to prevent cross-table deadlocks when running
