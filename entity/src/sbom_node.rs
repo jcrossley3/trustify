@@ -32,6 +32,12 @@ pub enum Relation {
     )]
     File,
     #[sea_orm(
+        belongs_to = "super::sbom_crypto::Entity",
+        from = "(Column::SbomId, Column::NodeId)",
+        to = "(super::sbom_crypto::Column::SbomId, super::sbom_crypto::Column::NodeId)"
+    )]
+    Crypto,
+    #[sea_orm(
         belongs_to = "super::sbom_node_checksum::Entity",
         from = "(Column::SbomId, Column::NodeId)",
         to = "(super::sbom_node_checksum::Column::SbomId, super::sbom_node_checksum::Column::NodeId)"
@@ -67,6 +73,12 @@ impl Related<super::sbom_package::Entity> for Entity {
 impl Related<super::sbom_file::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::File.def()
+    }
+}
+
+impl Related<super::sbom_crypto::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Crypto.def()
     }
 }
 
