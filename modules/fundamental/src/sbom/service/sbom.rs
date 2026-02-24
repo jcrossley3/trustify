@@ -433,6 +433,21 @@ impl SbomService {
         Ok(PaginatedResults { items, total })
     }
 
+    /// Fetch AI models associated with an SBOM.
+    #[instrument(skip(self, _connection), err(level=tracing::Level::INFO))]
+    pub async fn fetch_sbom_models<C: ConnectionTrait>(
+        &self,
+        sbom_id: Uuid,
+        search: Query,
+        paginated: Paginated,
+        _connection: &C,
+    ) -> Result<PaginatedResults<SbomPackage>, Error> {
+        // TODO
+        let items = vec![];
+        let total = 0;
+        Ok(PaginatedResults { items, total })
+    }
+
     /// Get all the tuples License ID, License Name from the licensing_infos table for a single SBOM
     #[instrument(skip(connection), err(level=tracing::Level::INFO))]
     pub async fn get_licensing_infos<C: ConnectionTrait>(
