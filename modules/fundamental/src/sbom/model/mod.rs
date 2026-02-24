@@ -110,6 +110,11 @@ impl SbomSummary {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default)]
+pub struct SbomModel {
+    // TODO
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default)]
 pub struct SbomPackage {
     /// The SBOM internal ID of a package
     pub id: String,
