@@ -437,6 +437,7 @@ impl ComponentCreator {
                         self.models.add(
                             node_id.clone(),
                             comp.name.to_string(),
+                            comp.purl.clone(),
                             comp.hashes.clone().into_iter().flatten(),
                             comp.into(),
                         );
