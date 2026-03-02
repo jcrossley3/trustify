@@ -9,8 +9,8 @@ use crate::{
         },
     },
     sbom::model::{
-        SbomExternalPackageReference, SbomNodeReference, SbomPackage, SbomPackageRelation,
-        SbomSummary, Which, details::SbomDetails,
+        SbomExternalPackageReference, SbomModel, SbomNodeReference, SbomPackage,
+        SbomPackageRelation, SbomSummary, Which, details::SbomDetails,
     },
 };
 use futures_util::{StreamExt, TryStreamExt, stream};
@@ -51,8 +51,9 @@ use trustify_entity::{
     qualified_purl::{self, CanonicalPurl},
     relationship::Relationship,
     sbom::{self, SbomNodeLink},
-    sbom_group_assignment, sbom_node, sbom_package, sbom_package_cpe_ref, sbom_package_license,
-    sbom_package_purl_ref, source_document, status, versioned_purl, vulnerability,
+    sbom_ai, sbom_group_assignment, sbom_node, sbom_package, sbom_package_cpe_ref,
+    sbom_package_license, sbom_package_purl_ref, source_document, status, versioned_purl,
+    vulnerability,
 };
 
 #[derive(Clone, Debug, Default)]
@@ -389,7 +390,7 @@ impl SbomService {
             sbom_package::Column::NodeId,
         )?;
 
-        query = join_purls_and_cpes(query)
+        query = join_cpes(join_purls(query))
             .filtering_with(
                 search,
                 sbom_package::Entity
@@ -441,8 +442,14 @@ impl SbomService {
         search: Query,
         paginated: Paginated,
         _connection: &C,
-    ) -> Result<PaginatedResults<SbomPackage>, Error> {
-        // TODO
+    ) -> Result<PaginatedResults<SbomModel>, Error> {
+        let query = join_purls(
+            sbom_ai::Entity::find()
+                .filter(sbom_ai::Column::SbomId.eq(sbom_id))
+                .join(JoinType::Join, sbom_ai::Relation::Node.def())
+                .join(JoinType::LeftJoin, sbom_ai::Relation::Purl.def()),
+        );
+
         let items = vec![];
         let total = 0;
         Ok(PaginatedResults { items, total })
@@ -677,7 +684,7 @@ impl SbomService {
 
         // collect PURLs and CPEs
 
-        query = join_purls_and_cpes(query);
+        query = join_cpes(join_purls(query));
 
         // filter for reference
 
@@ -751,14 +758,14 @@ impl SbomService {
     }
 }
 
-/// Join CPE and PURL information.
+/// Join PURL information.
 ///
-/// Given a select over something which already joins sbom_package_purl_ref and
-/// sbom_package_cpe_ref, this adds joins to fetch the data for PURLs and CPEs so that it can be
+/// Given a select over something which already joins
+/// sbom_package_purl_ref, this adds joins to fetch the data for PURLs
 /// built using [`package_from_row`].
 ///
-/// This will add the columns `purls` and `cpes` to the selected output.
-fn join_purls_and_cpes<E>(query: Select<E>) -> Select<E>
+/// This will add the column `purls` to the selected output.
+fn join_purls<E>(query: Select<E>) -> Select<E>
 where
     E: EntityTrait,
 {
@@ -785,6 +792,20 @@ where
             ),
             "purls",
         )
+}
+
+/// Join CPE information.
+///
+/// Given a select over something which already joins
+/// sbom_package_cpe_ref, this adds joins to fetch the data for CPEs so that it can be
+/// built using [`package_from_row`].
+///
+/// This will add the column `cpes` to the selected output.
+fn join_cpes<E>(query: Select<E>) -> Select<E>
+where
+    E: EntityTrait,
+{
+    query
         .join(
             JoinType::LeftJoin,
             sbom_package_cpe_ref::Relation::Cpe.def(),

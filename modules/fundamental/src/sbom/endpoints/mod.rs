@@ -65,6 +65,7 @@ pub fn configure(
         .service(get_sbom_advisories)
         .service(delete)
         .service(packages)
+        .service(models)
         .service(related)
         .service(upload)
         .service(download)
