@@ -5,6 +5,7 @@ mod query;
 mod test;
 
 pub use query::*;
+use uuid::Uuid;
 
 use crate::{
     Error,
