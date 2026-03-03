@@ -435,24 +435,30 @@ impl SbomService {
     }
 
     /// Fetch AI models associated with an SBOM.
-    #[instrument(skip(self, _connection), err(level=tracing::Level::INFO))]
+    #[instrument(skip(self, connection), err(level=tracing::Level::INFO))]
     pub async fn fetch_sbom_models<C: ConnectionTrait>(
         &self,
         sbom_id: Uuid,
         search: Query,
         paginated: Paginated,
-        _connection: &C,
+        connection: &C,
     ) -> Result<PaginatedResults<SbomModel>, Error> {
         let query = join_purls(
             sbom_ai::Entity::find()
                 .filter(sbom_ai::Column::SbomId.eq(sbom_id))
                 .join(JoinType::Join, sbom_ai::Relation::Node.def())
                 .join(JoinType::LeftJoin, sbom_ai::Relation::Purl.def()),
-        );
+        )
+        .filtering(search)?;
 
-        let items = vec![];
-        let total = 0;
-        Ok(PaginatedResults { items, total })
+        let limiter = query.limiting(connection, paginated.offset, paginated.limit);
+        let total = limiter.total().await?;
+        let items = limiter.fetch().await?;
+
+        Ok(PaginatedResults {
+            items: SbomModel::from_entities(&items).await?,
+            total,
+        })
     }
 
     /// Get all the tuples License ID, License Name from the licensing_infos table for a single SBOM

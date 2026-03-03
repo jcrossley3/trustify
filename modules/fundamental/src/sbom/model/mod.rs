@@ -14,7 +14,8 @@ use time::OffsetDateTime;
 use tracing::instrument;
 use trustify_common::{cpe::Cpe, purl::Purl};
 use trustify_entity::{
-    labels::Labels, relationship::Relationship, sbom, sbom_node, sbom_package, source_document,
+    labels::Labels, relationship::Relationship, sbom, sbom_ai, sbom_node, sbom_package,
+    source_document,
 };
 use utoipa::ToSchema;
 
@@ -111,7 +112,25 @@ impl SbomSummary {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default)]
 pub struct SbomModel {
-    // TODO
+    /// The SBOM internal ID of a model
+    pub id: String,
+    /// The name of the model in the SBOM
+    pub name: String,
+}
+
+impl SbomModel {
+    pub async fn from_entities(entities: &[sbom_ai::Model]) -> Result<Vec<Self>, Error> {
+        let mut summaries = Vec::new();
+        for each in entities {
+            summaries.push(Self::from_entity(each).await?)
+        }
+
+        Ok(summaries)
+    }
+
+    pub async fn from_entity(_entity: &sbom_ai::Model) -> Result<Self, Error> {
+        todo!()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default)]
