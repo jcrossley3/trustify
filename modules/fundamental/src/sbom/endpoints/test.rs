@@ -1679,7 +1679,7 @@ async fn get_cbom(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
 
 #[test_context(TrustifyContext)]
 #[test(actix_web::test)]
-async fn get_aibom(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
+async fn get_aibom_packages(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
     let app = caller(ctx).await?;
 
     // First upload it via the normal SBOM endpoint
@@ -1755,6 +1755,58 @@ async fn get_aibom(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
         response["items"][0]["described_by"][0]["id"],
         "pkg:generic/ibm-granite%2Fgranite-docling-258M@1.0"
     );
+
+    Ok(())
+}
+
+#[test_context(TrustifyContext)]
+#[test(actix_web::test)]
+async fn get_aibom_models(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
+    let app = caller(ctx).await?;
+
+    let id = ctx
+        .ingest_document("cyclonedx/ai/ibm-granite_granite-docling-258M_aibom.json")
+        .await?
+        .id
+        .to_string();
+
+    let uri = format!("/api/v2/sbom/{id}/models");
+    let req = TestRequest::get().uri(&uri).to_request();
+    let response: Value = app.call_and_read_body_json(req).await;
+    log::info!("response:\n{:#}", json!(response));
+    let expected_result = json!(
+        {
+           "items": [
+        {
+          "id": "pkg:generic/ibm-granite%2Fgranite-docling-258M@1.0",
+          "name": "granite-docling-258M",
+          "group": null,
+          "version": "1.0",
+          "purl": [
+            {
+              "uuid": "b3d8c434-ec9c-592a-91c8-596183beb691",
+              "purl": "pkg:generic/ibm-granite%2Fgranite-docling-258M@1.0",
+              "base": {
+                "uuid": "c28a16be-ec3a-5289-a37c-769330a32905",
+                "purl": "pkg:generic/ibm-granite%2Fgranite-docling-258M"
+              },
+              "version": {
+                "uuid": "b3d8c434-ec9c-592a-91c8-596183beb691",
+                "purl": "pkg:generic/ibm-granite%2Fgranite-docling-258M@1.0",
+                "version": "1.0"
+              },
+              "qualifiers": {}
+            }
+          ],
+          "cpe": [],
+          "licenses": [],
+          "licenses_ref_mapping": []
+        },
+      ],
+      "total": 1
+    }
+    );
+    assert!(expected_result.contains_subset(response.clone()));
 
     Ok(())
 }

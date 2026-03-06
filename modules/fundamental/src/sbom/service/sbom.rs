@@ -445,6 +445,13 @@ impl SbomService {
     ) -> Result<PaginatedResults<SbomModel>, Error> {
         let query = join_purls(
             sbom_ai::Entity::find()
+                .select_only()
+                .column(sbom_ai::Column::SbomId)
+                .group_by(sbom_ai::Column::SbomId)
+                .column(sbom_ai::Column::NodeId)
+                .group_by(sbom_ai::Column::NodeId)
+                .column(sbom_ai::Column::Properties)
+                .group_by(sbom_ai::Column::Properties)
                 .filter(sbom_ai::Column::SbomId.eq(sbom_id))
                 .join(JoinType::Join, sbom_ai::Relation::Node.def())
                 .join(JoinType::LeftJoin, sbom_ai::Relation::Purl.def()),
@@ -454,6 +461,8 @@ impl SbomService {
         let limiter = query.limiting(connection, paginated.offset, paginated.limit);
         let total = limiter.total().await?;
         let items = limiter.fetch().await?;
+
+        log::debug!("total={total}");
 
         Ok(PaginatedResults {
             items: SbomModel::from_entities(&items).await?,
