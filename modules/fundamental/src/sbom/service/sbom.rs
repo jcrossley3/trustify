@@ -446,10 +446,10 @@ impl SbomService {
         let query = join_purls(
             sbom_ai::Entity::find()
                 .select_only()
-                .column(sbom_ai::Column::SbomId)
-                .group_by(sbom_ai::Column::SbomId)
-                .column(sbom_ai::Column::NodeId)
+                .column_as(sbom_ai::Column::NodeId, "id")
                 .group_by(sbom_ai::Column::NodeId)
+                .column_as(sbom_node::Column::Name, "name")
+                .group_by(sbom_node::Column::Name)
                 .column(sbom_ai::Column::Properties)
                 .group_by(sbom_ai::Column::Properties)
                 .filter(sbom_ai::Column::SbomId.eq(sbom_id))
@@ -458,16 +458,19 @@ impl SbomService {
         )
         .filtering(search)?;
 
-        let limiter = query.limiting(connection, paginated.offset, paginated.limit);
+        let limiter = limit_selector::<'_, _, _, _, SbomModel>(
+            connection,
+            query,
+            paginated.offset,
+            paginated.limit,
+        );
+
         let total = limiter.total().await?;
         let items = limiter.fetch().await?;
 
         log::debug!("total={total}");
 
-        Ok(PaginatedResults {
-            items: SbomModel::from_entities(&items).await?,
-            total,
-        })
+        Ok(PaginatedResults { items, total })
     }
 
     /// Get all the tuples License ID, License Name from the licensing_infos table for a single SBOM

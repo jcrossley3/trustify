@@ -8,7 +8,7 @@ use crate::{
     purl::model::summary::purl::PurlSummary,
     source_document::model::SourceDocument,
 };
-use sea_orm::{ConnectionTrait, ModelTrait, PaginatorTrait, prelude::Uuid};
+use sea_orm::{ConnectionTrait, FromQueryResult, ModelTrait, PaginatorTrait, prelude::Uuid};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use tracing::instrument;
@@ -110,12 +110,18 @@ impl SbomSummary {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default)]
+#[derive(
+    FromQueryResult, Serialize, Deserialize, Debug, Clone, PartialEq, Eq, ToSchema, Default,
+)]
 pub struct SbomModel {
     /// The SBOM internal ID of a model
     pub id: String,
     /// The name of the model in the SBOM
     pub name: String,
+    /// The properties associated with the model
+    pub properties: serde_json::Value,
+    /// The model's PURL
+    pub purls: Vec<serde_json::Value>,
 }
 
 impl SbomModel {

@@ -5004,6 +5004,8 @@ components:
             required:
             - id
             - name
+            - properties
+            - purls
             properties:
               id:
                 type: string
@@ -5011,6 +5013,12 @@ components:
               name:
                 type: string
                 description: The name of the model in the SBOM
+              properties:
+                description: The properties associated with the model
+              purls:
+                type: array
+                items: {}
+                description: The model's PURL
         total:
           type: integer
           format: int64
@@ -5682,6 +5690,8 @@ components:
       required:
       - id
       - name
+      - properties
+      - purls
       properties:
         id:
           type: string
@@ -5689,6 +5699,12 @@ components:
         name:
           type: string
           description: The name of the model in the SBOM
+        properties:
+          description: The properties associated with the model
+        purls:
+          type: array
+          items: {}
+          description: The model's PURL
     SbomPackage:
       type: object
       required:
