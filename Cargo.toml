@@ -45,10 +45,10 @@ async-graphql = "7.0.5"
 async-graphql-actix-web = "7.0.5"
 async-recursion = "1"
 async-trait = "0.1.74"
-aws-config = { version = "1.6.1", features = ["behavior-version-latest"] }
-aws-sdk-s3 = { version = "1.83.0", features = ["behavior-version-latest"] }
-aws-smithy-http-client = { version = "1", features = ["rustls-aws-lc"] }
-aws-smithy-types = { version = "1" }
+aws-config = { version = "1.8.15", features = ["behavior-version-latest"] }
+aws-sdk-s3 = { version = "1.125.0", features = ["behavior-version-latest"] }
+aws-smithy-http-client = { version = "1.1.12", features = ["rustls-aws-lc"] }
+aws-smithy-types = { version = "1.4.6" }
 base64 = "0.22"
 biscuit = "0.7"
 build-info = "0.0.42"
