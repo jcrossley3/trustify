@@ -192,6 +192,14 @@ async fn create_client(config: AuthenticatorClientConfig) -> anyhow::Result<Auth
         })
         .transpose()?;
 
+    let scope_selector = parse_json_path(&config.scope_selector).map_err(|err| {
+        anyhow!(
+            "Unable to parse JSON path scope selector for client '{}' / '{}': {err}",
+            config.issuer_url,
+            client.client_id,
+        )
+    })?;
+
     Ok(AuthenticatorClient {
         client,
         audience: config.required_audience,
@@ -199,6 +207,7 @@ async fn create_client(config: AuthenticatorClientConfig) -> anyhow::Result<Auth
         additional_permissions: config.additional_permissions,
         group_selector,
         group_mappings: config.group_mappings,
+        scope_selector,
     })
 }
 
@@ -210,25 +219,52 @@ pub struct AuthenticatorClient {
     additional_permissions: Vec<String>,
     group_selector: Option<JpQuery>,
     group_mappings: HashMap<String, Vec<String>>,
+    scope_selector: JpQuery,
 }
 
 impl AuthenticatorClient {
     /// Convert from a set of (verified!) access token claims into a [`ValidatedAccessToken`] struct.
     pub fn convert_token(&self, access_token: AccessTokenClaims) -> ValidatedAccessToken {
-        let mut permissions = Self::map_scopes(&access_token.scope, &self.scope_mappings);
+        let extra_values = &access_token.extended_claims;
+        let mut permissions = Self::map_items(
+            Self::extract_scopes(extra_values, &self.scope_selector),
+            &self.scope_mappings,
+        );
         permissions.extend(self.additional_permissions.clone());
         let groups = self
             .group_selector
             .as_ref()
-            .map(|selector| Self::extract_groups(&access_token.extended_claims, selector))
+            .map(|selector| Self::extract_groups(extra_values, selector))
             .unwrap_or_default();
 
-        permissions.extend(Self::map_groups(groups, &self.group_mappings));
+        permissions.extend(Self::map_items(groups, &self.group_mappings));
 
         ValidatedAccessToken {
             access_token,
             permissions,
         }
+    }
+
+    /// Extract scopes from the value/access token
+    fn extract_scopes(value: &Value, selector: &JpQuery) -> Vec<String> {
+        let mut result = Vec::new();
+        for qr in js_path_process(selector, value).ok().into_iter().flatten() {
+            match qr.val() {
+                Value::String(s) => {
+                    result.extend(s.split_ascii_whitespace().map(str::to_string));
+                }
+                Value::Array(arr) => {
+                    result.extend(
+                        arr.iter()
+                            .filter_map(|v| v.as_str())
+                            .flat_map(|s| s.split_ascii_whitespace())
+                            .map(str::to_string),
+                    );
+                }
+                _ => {}
+            }
+        }
+        result
     }
 
     /// Extract the groups from the value/access token
@@ -242,31 +278,18 @@ impl AuthenticatorClient {
             .collect()
     }
 
-    /// Run the scopes through the scope mapping configuration
-    fn map_scopes(scopes: &str, scope_mappings: &HashMap<String, Vec<String>>) -> Vec<String> {
-        scopes
-            .split(' ')
-            .flat_map(|scope| {
-                scope_mappings
-                    .get(scope)
-                    .cloned()
-                    .unwrap_or_else(|| vec![scope.to_string()])
-            })
-            .collect()
-    }
-
-    /// Run the groups through the group mapping configuration
-    fn map_groups(
-        groups: Vec<String>,
-        group_mappings: &HashMap<String, Vec<String>>,
+    fn map_items(
+        items: impl IntoIterator<Item = impl AsRef<str>>,
+        table: &HashMap<String, Vec<String>>,
     ) -> Vec<String> {
-        groups
-            .into_iter()
-            .flat_map(|group| match group_mappings.get(&group) {
-                Some(permissions) => permissions.clone(),
-                None => vec![group],
-            })
-            .collect()
+        let mut result = Vec::new();
+        for item in items {
+            match table.get(item.as_ref()) {
+                Some(mapped) => result.extend_from_slice(mapped),
+                None => result.push(item.as_ref().to_string()),
+            }
+        }
+        result
     }
 }
 
@@ -281,6 +304,8 @@ impl Deref for AuthenticatorClient {
 #[cfg(test)]
 mod test {
     use super::*;
+    use rstest::rstest;
+    use serde_json::json;
 
     fn assert_scope_mapping(scopes: &str, mappings: &[(&str, &[&str])], expected: &[&str]) {
         let mappings = mappings
@@ -291,7 +316,7 @@ mod test {
             .iter()
             .map(|item| item.to_string())
             .collect::<Vec<_>>();
-        let result = AuthenticatorClient::map_scopes(scopes, &mappings);
+        let result = AuthenticatorClient::map_items(scopes.split_whitespace(), &mappings);
         assert_eq!(result, expected);
     }
 
@@ -336,5 +361,60 @@ mod test {
         let selector = parse_json_path(PATH).unwrap();
         let groups = AuthenticatorClient::extract_groups(&value, &selector);
         assert_eq!(&groups, &["manager", "reader"]);
+    }
+
+    #[rstest]
+    #[case::scope_only(json!({"scope": "read:document create:document"}), vec!["read:document", "create:document"])]
+    #[case::scp_string(json!({"scp": "read:document"}), vec!["read:document"])]
+    #[case::scp_array(json!({"scp": ["api://app/read:document", "api://app/create:document"]}), vec!["api://app/read:document", "api://app/create:document"])]
+    #[case::both_claims(json!({"scope": "openid profile", "scp": ["api://app/read:document", "api://app/create:document"]}), vec!["openid", "profile", "api://app/read:document", "api://app/create:document"])]
+    fn test_extract_scopes(#[case] value: Value, #[case] expected: Vec<&str>) {
+        let selector = parse_json_path(config::DEFAULT_SCOPE_SELECTOR).unwrap();
+        assert_eq!(
+            AuthenticatorClient::extract_scopes(&value, &selector),
+            expected
+        );
+    }
+
+    #[test]
+    fn test_extract_scopes_custom_selector() {
+        let selector = parse_json_path("$.scp").unwrap();
+        let value = json!({
+            "scope": "openid profile",
+            "scp": ["read:document", "create:document"]
+        });
+        // Should extract only from scp, ignoring scope
+        assert_eq!(
+            AuthenticatorClient::extract_scopes(&value, &selector),
+            &["read:document", "create:document"]
+        );
+    }
+
+    #[rstest]
+    #[case::null_value(json!({"scope": null}), vec![])]
+    #[case::number_value(json!({"scope": 42}), vec![])]
+    #[case::boolean_value(json!({"scope": true}), vec![])]
+    #[case::object_value(json!({"scope": {"nested": "value"}}), vec![])]
+    #[case::empty_string(json!({"scope": ""}), vec![])]
+    #[case::empty_array(json!({"scp": []}), vec![])]
+    #[case::no_matching_fields(json!({"other": "value"}), vec![])]
+    fn test_extract_scopes_non_string_and_empty(#[case] value: Value, #[case] expected: Vec<&str>) {
+        let selector = parse_json_path(config::DEFAULT_SCOPE_SELECTOR).unwrap();
+        assert_eq!(
+            AuthenticatorClient::extract_scopes(&value, &selector),
+            expected
+        );
+    }
+
+    #[rstest]
+    #[case::mixed_types(json!({"scp": ["read:document", 42, null, "write:document", true]}), vec!["read:document", "write:document"])]
+    #[case::string_multiple_whitespace(json!({"scope": "  read:document   write:document  "}), vec!["read:document", "write:document"])]
+    #[case::array_with_whitespace(json!({"scp": ["  read:document write:document  ", "  delete:document  "]}), vec!["read:document", "write:document", "delete:document"])]
+    fn test_extract_scopes_edge_cases(#[case] value: Value, #[case] expected: Vec<&str>) {
+        let selector = parse_json_path(config::DEFAULT_SCOPE_SELECTOR).unwrap();
+        assert_eq!(
+            AuthenticatorClient::extract_scopes(&value, &selector),
+            expected
+        );
     }
 }

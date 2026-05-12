@@ -24,9 +24,6 @@ pub struct AccessTokenClaims {
 
     #[serde(flatten)]
     pub extended_claims: Value,
-
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub scope: String,
 }
 
 impl CompactJson for AccessTokenClaims {}
