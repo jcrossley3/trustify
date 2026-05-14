@@ -1,0 +1,11 @@
+Recommended Directory Layout:
+
+    sboms/
+    ├── medical-scribe-app/
+    │   └── 5.0.0/
+    │       └── medical-scribe-app-5.0.0.sbom.json
+    │
+    └── aiboms/
+        └── scribe-gpt-medical/
+            └── 2026.05/
+                └── scribe-gpt-medical-2026.05.aibom.json

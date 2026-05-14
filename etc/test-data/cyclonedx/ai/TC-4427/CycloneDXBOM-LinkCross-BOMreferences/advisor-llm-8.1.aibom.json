@@ -1,0 +1,113 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+
+  "version": 2,
+
+  "serialNumber": "urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+
+  "metadata": {
+    "timestamp": "2026-05-14T12:00:00Z",
+
+    "component": {
+      "type": "machine-learning-model",
+      "name": "advisor-llm",
+      "version": "8.1",
+
+      "bom-ref": "advisor-llm-root"
+    },
+
+    "authors": [
+      {
+        "name": "Acme AI Platform Team"
+      }
+    ]
+  },
+
+  "components": [
+    {
+      "type": "machine-learning-model",
+
+      "name": "advisor-llm",
+      "version": "8.1",
+
+      "bom-ref": "advisor-llm-root",
+
+      "publisher": "Acme AI Platform Team",
+
+      "description": "Instruction-tuned enterprise advisory model",
+
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+
+      "properties": [
+        {
+          "name": "model:architecture",
+          "value": "Transformer"
+        },
+        {
+          "name": "model:parameters",
+          "value": "70B"
+        },
+        {
+          "name": "model:framework",
+          "value": "PyTorch"
+        },
+        {
+          "name": "model:precision",
+          "value": "bf16"
+        },
+        {
+          "name": "model:context-window",
+          "value": "131072"
+        },
+        {
+          "name": "model:fine-tuned-from",
+          "value": "llama3-70b"
+        }
+      ],
+
+      "externalReferences": [
+        {
+          "type": "model-card",
+
+          "url": "https://models.acme.example/advisor-llm/model-card"
+        }
+      ]
+    },
+
+    {
+      "type": "data",
+
+      "name": "enterprise-advisory-training-set",
+      "version": "2026-Q1",
+
+      "bom-ref": "advisor-training-data"
+    },
+
+    {
+      "type": "data",
+
+      "name": "advisor-tokenizer",
+      "version": "5.2",
+
+      "bom-ref": "advisor-tokenizer"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "advisor-llm-root",
+
+      "dependsOn": [
+        "advisor-training-data",
+        "advisor-tokenizer"
+      ]
+    }
+  ]
+}

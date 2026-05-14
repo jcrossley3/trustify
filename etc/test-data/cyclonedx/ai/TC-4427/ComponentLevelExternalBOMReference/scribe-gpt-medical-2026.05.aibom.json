@@ -1,0 +1,109 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 3,
+  "serialNumber": "urn:uuid:5ab8e98b-3b35-44d5-92d9-222222222222",
+
+  "metadata": {
+    "timestamp": "2026-05-14T12:00:00Z",
+
+    "component": {
+      "type": "machine-learning-model",
+      "name": "scribe-gpt-medical",
+      "version": "2026.05",
+      "bom-ref": "scribe-model"
+    },
+
+    "authors": [
+      {
+        "name": "Acme AI Research"
+      }
+    ]
+  },
+
+  "components": [
+    {
+      "type": "machine-learning-model",
+      "name": "scribe-gpt-medical",
+      "version": "2026.05",
+      "bom-ref": "scribe-model",
+
+      "publisher": "Acme AI Research",
+
+      "description": "Fine-tuned medical summarization and transcription model",
+
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+
+      "properties": [
+        {
+          "name": "model:architecture",
+          "value": "Llama-derived Transformer"
+        },
+        {
+          "name": "model:parameters",
+          "value": "13B"
+        },
+        {
+          "name": "model:framework",
+          "value": "PyTorch"
+        },
+        {
+          "name": "model:precision",
+          "value": "fp16"
+        },
+        {
+          "name": "model:context-window",
+          "value": "32768"
+        },
+        {
+          "name": "model:fine-tuned-from",
+          "value": "llama3-13b"
+        }
+      ],
+
+      "externalReferences": [
+        {
+          "type": "model-card",
+          "url": "https://models.acme.example/scribe-gpt-medical/model-card"
+        }
+      ]
+    },
+
+    {
+      "type": "data",
+      "name": "medical-transcripts-training-dataset",
+      "version": "2026-Q1",
+      "bom-ref": "training-dataset",
+
+      "properties": [
+        {
+          "name": "dataset:source",
+          "value": "Curated anonymized transcripts"
+        }
+      ]
+    },
+
+    {
+      "type": "data",
+      "name": "medical-tokenizer",
+      "version": "3.1",
+      "bom-ref": "medical-tokenizer"
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "scribe-model",
+      "dependsOn": [
+        "training-dataset",
+        "medical-tokenizer"
+      ]
+    }
+  ]
+}

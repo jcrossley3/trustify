@@ -1,0 +1,29 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:22222222-2222-2222-2222-222222222222",
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "claims-assistant",
+      "version": "2.0.0",
+      "bom-ref": "claims-app"
+    }
+  },
+  "components": [
+    {
+      "type": "application",
+      "name": "claims-assistant",
+      "version": "2.0.0",
+      "bom-ref": "claims-app"
+    }
+  ],
+  "externalReferences": [
+    {
+      "type": "bom",
+      "url": "https://sbom.example.com/aiboms/claims-llm-7b.cdx.json",
+      "comment": "External AI BOM describing the hosted model"
+    }
+  ]
+}

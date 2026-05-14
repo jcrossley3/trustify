@@ -1,0 +1,70 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "serialNumber": "urn:uuid:9e2aa7c3-62cb-4f41-9e4f-111111111111",
+
+  "metadata": {
+    "timestamp": "2026-05-14T12:00:00Z",
+    "component": {
+      "type": "application",
+      "name": "medical-scribe-app",
+      "version": "5.0.0",
+      "bom-ref": "medical-scribe-app"
+    }
+  },
+
+  "components": [
+    {
+      "type": "application",
+      "name": "medical-scribe-app",
+      "version": "5.0.0",
+      "bom-ref": "medical-scribe-app",
+      "purl": "pkg:docker/acme/medical-scribe-app@5.0.0"
+    },
+
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.115.0",
+      "bom-ref": "fastapi-lib",
+      "purl": "pkg:pypi/fastapi@0.115.0"
+    },
+
+    {
+      "type": "library",
+      "name": "transformers",
+      "version": "4.41.2",
+      "bom-ref": "transformers-lib",
+      "purl": "pkg:pypi/transformers@4.41.2"
+    },
+
+    {
+      "type": "machine-learning-model",
+      "name": "scribe-gpt-medical",
+      "version": "2026.05",
+      "bom-ref": "scribe-model",
+
+      "description": "External medical transcription and summarization model",
+
+      "externalReferences": [
+        {
+          "type": "bom",
+          "url": "./scribe-gpt-medical-2026.05.aibom.cdx.json",
+          "comment": "External AIBOM describing the AI model supply chain"
+        }
+      ]
+    }
+  ],
+
+  "dependencies": [
+    {
+      "ref": "medical-scribe-app",
+      "dependsOn": [
+        "fastapi-lib",
+        "transformers-lib",
+        "scribe-model"
+      ]
+    }
+  ]
+}
