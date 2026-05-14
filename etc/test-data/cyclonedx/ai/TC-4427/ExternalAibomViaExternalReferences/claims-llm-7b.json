@@ -1,0 +1,37 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 3,
+  "serialNumber": "urn:uuid:33333333-3333-3333-3333-333333333333",
+  "metadata": {
+    "component": {
+      "type": "machine-learning-model",
+      "name": "claims-llm-7b",
+      "version": "2026.04",
+      "bom-ref": "claims-llm"
+    }
+  },
+  "components": [
+    {
+      "type": "machine-learning-model",
+      "name": "claims-llm-7b",
+      "version": "2026.04",
+      "bom-ref": "claims-llm",
+      "properties": [
+        {
+          "name": "model:architecture",
+          "value": "Llama-derived"
+        },
+        {
+          "name": "model:parameters",
+          "value": "7B"
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "name": "claims-training-dataset",
+      "version": "2026-Q1"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+Understanding the BOM-Link URN
+
+The key line is:
+{
+  "url": "urn:cdx:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/2"
+}
+
+
+This means:
+
+Part                                    Meaning
+====                                    =======
+urn:cdx:                                CycloneDX BOM-Link namespace
+aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee    Target BOM serial number UUID
+/2                                      BOM version
+
+The referenced BOM must therefore contain:
+{
+  "serialNumber": "urn:uuid:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+  "version": 2
+}
+
+This creates a deterministic immutable link.
+
+Recommended Repository Layout
+
+    sboms/
+    ├── applications/
+    │   └── advisor-chatbot/
+    │       └── 1.9.0/
+    │           └── advisor-chatbot-1.9.0.sbom.json
+    │
+    └── aiboms/
+        └── advisor-llm/
+            └── 8.1/
+                └── advisor-llm-8.1.aibom.json
