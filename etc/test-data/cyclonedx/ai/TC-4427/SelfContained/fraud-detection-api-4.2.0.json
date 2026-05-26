@@ -87,8 +87,7 @@
       "ref": "app-fraud-api",
       "dependsOn": [
         "lib-transformers",
-        "model-fraudbert",
-        "tokenizer-fraudbert"
+        "model-fraudbert"
       ]
     }
   ]

@@ -1815,6 +1815,35 @@ async fn get_aibom_models(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
 }
 
 #[test_context(TrustifyContext)]
+#[test(actix_web::test)]
+async fn aibom_self_contained_model(ctx: &TrustifyContext) -> Result<(), anyhow::Error> {
+    let app = caller(ctx).await?;
+
+    let id = ctx
+        .ingest_document("cyclonedx/ai/TC-4427/SelfContained/fraud-detection-api-4.2.0.json")
+        .await?
+        .id
+        .to_string();
+
+    let uri = format!("/api/v3/sbom/{id}/models?total=true&counts=true");
+    let req = TestRequest::get().uri(&uri).to_request();
+    let response: Value = app.call_and_read_body_json(req).await;
+    log::info!("response:\n{:#}", json!(response));
+    let expected = json!({
+        "items": [
+            {
+                "id": "model-fraudbert",
+                "name": "fraudbert-base",
+            },
+        ],
+        "total": 1
+    });
+    assert!(response.contains_subset(expected));
+
+    Ok(())
+}
+
+#[test_context(TrustifyContext)]
 #[rstest]
 #[case("hugging", 1)]
 #[case("granite", 1)]
